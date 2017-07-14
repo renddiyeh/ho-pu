@@ -4,7 +4,7 @@
       :zoom="14"
       :center="center"
     >
-      <tile-layer url="//{s}.tile.osm.org/{z}/{x}/{y}.png" />
+      <tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
       <!-- <geo-json
         v-for="feature in features"
         :geojson="feature"
