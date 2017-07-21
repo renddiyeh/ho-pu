@@ -6,11 +6,10 @@
     >
       <tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
       <geo-json
-        v-for="(feature, i) in features"
-        :geojson="feature"
+        :geojson="region"
         :options="{
           /*fillColor: 'none',*/
-          color: radiusColor,
+          color: polygonColor,
           /*onEachFeature,*/
         }"
         :key="`feature-${i}`"
@@ -96,27 +95,28 @@ import {
   Tooltip,
 } from 'vue2-leaflet';
 import { icon } from 'leaflet';
-import { feature as topoJsonFeature } from 'topojson';
+// import { feature as topoJsonFeature } from 'topojson';
 import 'leaflet/dist/leaflet.css';
 
 import getDistanceFromLatLngInKm from '@/utils/getDistanceFromLatLngInKm';
 import addres from '@/assets/hopu-addr.json';
-import banCiao from '@/assets/ban-ciao.json';
-import tuCheng from '@/assets/tu-cheng.json';
-import logo from '@/assets/tjc.png';
+import region from '@/assets/region.geo.json';
+// import banCiao from '@/assets/ban-ciao.json';
+// import tuCheng from '@/assets/tu-cheng.json';
 // import zongHe from '@/assets/zong-he.json';
+import logo from '@/assets/tjc.png';
 
 const church = icon({
   iconUrl: logo,
   iconSize: [50, 50],
 });
 
-const getFeatures = data => topoJsonFeature(data, data.objects.map).features;
-const features = [
-  banCiao,
-  tuCheng,
-  // zongHe,
-].map(getFeatures);
+// const getFeatures = data => topoJsonFeature(data, data.objects.map).features;
+// const features = [
+//   banCiao,
+//   tuCheng,
+//   // zongHe,
+// ].map(getFeatures);
 
 const center = {
   lat: 25.0028981,
@@ -150,9 +150,10 @@ export default {
     return {
       center,
       addrs,
-      features,
+      region,
       church,
       radiusColor: '#9fa0a0',
+      polygonColor: '#C38241',
       markerColor: '#036EB8',
       counts,
       showGeoJson: true,
