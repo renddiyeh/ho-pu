@@ -14,6 +14,7 @@ export default {
 html,
 body {
   height: 100%;
+  font-family: sans-serif;
 }
 
 body {

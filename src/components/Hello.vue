@@ -1,20 +1,11 @@
 <template>
   <div class="container">
     <l-map
-      :zoom="14"
+      :zoom="15"
       :center="center"
+      ref="map"
     >
       <tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" />
-      <geo-json
-        :geojson="region"
-        :options="{
-          /*fillColor: 'none',*/
-          color: polygonColor,
-          /*onEachFeature,*/
-        }"
-        :key="`feature-${i}`"
-      >
-      </geo-json>
       <l-circle
         :latLng="center"
         :radius="3000"
@@ -44,10 +35,12 @@
       >
         <tooltip :content="`${a.name}(${a.distance}km)`"></tooltip>
       </l-circle>
-      <l-marker :latLng="center" :icon="church">
-        <tooltip content="後埔教會"></tooltip>
-      </l-marker>
+      <l-marker :latLng="center" :icon="mainChurch" />
+      <l-marker :latLng="xinPu" :icon="subChurch" />
+      <l-marker :latLng="banCiao" :icon="subChurch" />
+      <l-marker :latLng="trainStation" :icon="stationIcon" />
     </l-map>
+    <h1 class="title">後埔教會信徒分佈圖</h1>
     <div class="stats">
       <table>
         <thead>
@@ -68,20 +61,6 @@
         </tbody>
       </table>
     </div>
-    <div class="settings">
-      <!-- <div class="">
-        <input type="checkbox" id="geoJson" v-model="showGeoJson" />
-        <label for="geoJson">地理邊界</label>
-      </div>
-      <div class="">
-        <input type="checkbox" id="radius" v-model="showRadius" />
-        <label for="radius">標示範圍</label>
-      </div> -->
-      <div class="">
-        <label for="radius">Dot Size</label>
-        <input type="range" id="dotSize" v-model="dotSize" min="10" max="70">
-      </div>
-    </div>
   </div>
 </template>
 
@@ -94,21 +73,46 @@ import {
   LCircle,
   Tooltip,
 } from 'vue2-leaflet';
-import { icon } from 'leaflet';
+import { icon, divIcon, marker } from 'leaflet';
 // import { feature as topoJsonFeature } from 'topojson';
 import 'leaflet/dist/leaflet.css';
 
 import getDistanceFromLatLngInKm from '@/utils/getDistanceFromLatLngInKm';
 import addres from '@/assets/hopu-addr.json';
-import region from '@/assets/region.geo.json';
+// import region from '@/assets/region.geo.json';
 // import banCiao from '@/assets/ban-ciao.json';
 // import tuCheng from '@/assets/tu-cheng.json';
 // import zongHe from '@/assets/zong-he.json';
 import logo from '@/assets/tjc.png';
+import orangeMarker from '@/assets/orange-marker.png';
+import blueMarker from '@/assets/blue-marker.png';
+import darkBlueMarker from '@/assets/dark-blue-marker.png';
+
+const iconSize = 50;
+
+const iconBase = {
+  iconSize: [iconSize, iconSize],
+  iconAnchor: [iconSize / 2, iconSize],
+};
 
 const church = icon({
   iconUrl: logo,
-  iconSize: [50, 50],
+  ...iconBase,
+});
+
+const mainChurch = icon({
+  iconUrl: orangeMarker,
+  ...iconBase,
+});
+
+const subChurch = icon({
+  iconUrl: blueMarker,
+  ...iconBase,
+});
+
+const stationIcon = icon({
+  iconUrl: darkBlueMarker,
+  ...iconBase,
 });
 
 // const getFeatures = data => topoJsonFeature(data, data.objects.map).features;
@@ -122,6 +126,10 @@ const center = {
   lat: 25.0028981,
   lng: 121.4620873,
 };
+
+const banCiao = { lat: 25.0038584, lng: 121.4467831 };
+const xinPu = { lat: 25.0271856, lng: 121.4644488 };
+const trainStation = { lat: 25.0143879, lng: 121.4613382 };
 
 const addrs = addres.map(addr => ({
   ...addr,
@@ -146,68 +154,126 @@ export default {
     Tooltip,
     LMarker,
   },
+  mounted() {
+    const mapComponent = this.$refs.map;
+    const { mapObject } = mapComponent;
+    const labelBase = {
+      className: 'map-label',
+      iconSize: [iconSize * 5, iconSize],
+      iconAnchor: [iconSize * 2.5, -iconSize / 20],
+    };
+
+    marker(center, {
+      icon: divIcon({
+        ...labelBase,
+        html: '後埔教會',
+      }),
+    }).addTo(mapObject);
+    marker(banCiao, {
+      icon: divIcon({
+        ...labelBase,
+        html: `板橋教會<br>(${getDistanceFromLatLngInKm(center, banCiao)}km)`,
+      }),
+    }).addTo(mapObject);
+    marker(xinPu, {
+      icon: divIcon({
+        ...labelBase,
+        html: `新埔教會<br>(${getDistanceFromLatLngInKm(center, xinPu)}km)`,
+      }),
+    }).addTo(mapObject);
+    marker(trainStation, {
+      icon: divIcon({
+        ...labelBase,
+        html: `板橋火車站<br>(${getDistanceFromLatLngInKm(center, trainStation)}km)`,
+      }),
+    }).addTo(mapObject);
+  },
   data() {
     return {
       center,
       addrs,
-      region,
+      // region,
       church,
       radiusColor: '#9fa0a0',
-      polygonColor: '#C38241',
+      polygonColor: '#E2513B',
       markerColor: '#036EB8',
+      lightBlue: '#13B0CA',
       counts,
       showGeoJson: true,
       showRadius: true,
-      dotSize: 20,
+      dotSize: 30,
+      // features,
+      banCiao,
+      xinPu,
+      trainStation,
+      mainChurch,
+      subChurch,
+      stationIcon,
     };
-  },
-  methods: {
-    onEachFeature(feature, layer) {
-      console.log(layer.getBounds().getCenter());
-      // const label = new Label();
-      // label.setContent(feature.properties.name);
-      // label.setLatLng(polygon.getBounds().getCenter())
-      // map.showLabel(label);
-    },
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
+.zoom {
+  transform: scale(0.075, 0.075);
+  transform-origin: 0 0;
+}
+
 .container {
   height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.print {
+  height: 14030px;
+  width: 9922px;
   position: relative;
 }
 
 .stats {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  bottom: 16px;
+  left: 16px;
   padding: 1em;
   background: white;
   z-index: 9999;
+}
+
+.print .stats {
+  bottom: 200px;
+  left: 200px;
+  font-size: 150px;
+}
+
+.map-label {
+  font-size: 16px;
+  text-align: center;
+}
+
+.print .map-label {
+  font-size: 150px;
 }
 
 .stats td {
   padding: 0.5em;
 }
 
-.settings {
+.title {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
-  padding: 1em;
-  background: white;
-  z-index: 9999;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 1000;
+  letter-spacing: 0.25em;
+  margin-left: -0.25em;
 }
 
-.visible {
-  display: auto;
-}
-
-.hidden {
-  display: none;
+.print .title {
+  font-size: 400px;
 }
 
 </style>
