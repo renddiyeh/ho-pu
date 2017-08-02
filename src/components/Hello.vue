@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div :class="className">
     <l-map
-      :zoom="15"
+      :zoom="zoom"
       :center="center"
       ref="map"
     >
@@ -73,7 +73,7 @@ import {
   LCircle,
   Tooltip,
 } from 'vue2-leaflet';
-import { icon, divIcon, marker } from 'leaflet';
+import { icon, divIcon, marker, control } from 'leaflet';
 // import { feature as topoJsonFeature } from 'topojson';
 import 'leaflet/dist/leaflet.css';
 
@@ -88,7 +88,9 @@ import orangeMarker from '@/assets/orange-marker.png';
 import blueMarker from '@/assets/blue-marker.png';
 import darkBlueMarker from '@/assets/dark-blue-marker.png';
 
-const iconSize = 50;
+const printMode = 0;
+
+const iconSize = printMode ? 150 : 50;
 
 const iconBase = {
   iconSize: [iconSize, iconSize],
@@ -131,9 +133,16 @@ const banCiao = { lat: 25.0038584, lng: 121.4467831 };
 const xinPu = { lat: 25.0271856, lng: 121.4644488 };
 const trainStation = { lat: 25.0143879, lng: 121.4613382 };
 
-const addrs = addres.map(addr => ({
+const addrs = addres.map(({ lat, lng, ...addr }) => ({
   ...addr,
-  distance: getDistanceFromLatLngInKm(addr.location, center),
+  location: {
+    lat,
+    lng,
+  },
+  distance: getDistanceFromLatLngInKm({
+    lat,
+    lng,
+  }, center),
 }));
 
 const counts = [1, 2, 3, Infinity].map(distance => ({
@@ -162,6 +171,13 @@ export default {
       iconSize: [iconSize * 5, iconSize],
       iconAnchor: [iconSize * 2.5, -iconSize / 20],
     };
+
+    control.scale({
+      metric: true,
+      imperial: false,
+      maxWidth: printMode ? 2000 : 250,
+      position: 'bottomright',
+    }).addTo(mapObject);
 
     marker(center, {
       icon: divIcon({
@@ -192,6 +208,8 @@ export default {
     return {
       center,
       addrs,
+      className: printMode ? 'print' : 'container',
+      zoom: printMode ? 18 : 15,
       // region,
       church,
       radiusColor: '#9fa0a0',
@@ -274,6 +292,21 @@ export default {
 
 .print .title {
   font-size: 400px;
+}
+
+.print .leaflet-control-scale-line {
+  line-height: 1.5;
+  padding: 20px 50px 10px;
+  font-size: 100px;
+  border-width: 16px;
+}
+
+.print .leaflet-right .leaflet-control {
+  margin-right: 200px;
+}
+
+.print .leaflet-bottom .leaflet-control-scale {
+  margin-bottom: 200px;
 }
 
 </style>
