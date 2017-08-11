@@ -219,7 +219,7 @@ export default {
       counts,
       showGeoJson: true,
       showRadius: true,
-      dotSize: 30,
+      dotSize: printMode ? 30 : 20,
       // features,
       banCiao,
       xinPu,
